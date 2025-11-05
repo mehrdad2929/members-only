@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Message</title>
+</head>
+<body>
+    <h1>Edit Message</h1>
+    
+    <form method="POST" action="/messages/<%= message.id %>/edit">
+        <label for="message">Message:</label>
+        <textarea 
+            name="editedMessage" 
+            id="editedMessage" 
+            rows="4" 
+            cols="50"
+            required
+        ><%= message.message %></textarea>
+        
+        <button type="submit">Save Changes</button>
+        <a href="/">Cancel</a>
+    </form>
+</body>
+</html>

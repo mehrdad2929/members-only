@@ -1,27 +1,57 @@
 const express = require('express')
 const compression = require('compression');
 const path = require('path');
-const messageRouter = require('./routes/messagesRouter');
-
+const appRouter = require('./routes/appRoutes');
+const session = require('express-session');
+const pool = require('./db/pool')
+const flash = require('connect-flash')
 const app = express()
-app.use(compression()); // Compresses res body (gzip, etc.)
+const passport = require('./config/passport');
+const { setUser } = require('./middlewares/auth')
 
-// view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
-
 app.use(express.urlencoded({ extended: true }));
-// for using static files on vercel(in this case styles)
+
+//NOTE:setting up session
+app.use(session({
+    store: new (require('connect-pg-simple')(session))({
+        pool: pool,
+        tableName: 'session'
+    }),
+    secret: process.env.FOO_COOKIE_SECRET,
+    saveUninitialized: false,
+    createTableIfMissing: true,
+    resave: false,
+    cookie: {
+        httpOnly: true,
+        sameSite: 'strict',
+        maxAge: 30 * 24 * 60 * 60 * 1000
+    }
+}));
+
+app.use(flash());
+app.use((req, res, next) => {
+    res.locals.messages = req.flash();
+    next();
+})
+//NOTE:starting passport(making it available on all routes)
+app.use(passport.initialize());
+//NOTE:connecting passport to session(useing session in passport)
+app.use(passport.session());
+//NOTE:make user available to all views
+app.use(setUser);
+
+app.use(compression()); // Compresses res body (gzip, etc.)
 app.use(express.static(path.join(__dirname, 'public')));
-// u add router here
-app.use('/', messageRouter)
+app.use('/', appRouter)
 
 app.use((err, req, res, next) => {
     console.error(err);
     res.status(err.statusCode || 500).send(err.message);
 });
 // choose a port
-const PORT = 3001;
+const PORT = 3000;
 app.listen(PORT, (error) => {
     if (error) {
         throw error;

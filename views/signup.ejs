@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <style>
+        .error {
+            background-color: #fee;
+            border: 1px solid #f88;
+            color: #c00;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Signup Page</h1>
+        
+        <!-- Display error messages -->
+        <% if (messages.error) { %>
+            <div class="error">
+                <%= messages.error %>
+            </div>
+        <% } %>
+        
+        <div class="form-container">
+            <form method="POST" action="/signup" id="signupform">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required/>
+                    
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required minlength="6"/>
+                </div>
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    Sign Up
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
