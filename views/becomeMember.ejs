@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <style>
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .puzzle-box {
+            background: #f5f5f5;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .puzzle-question {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 1.2em;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .error {
+            background: #fee;
+            border: 1px solid #f88;
+            color: #c00;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #efe;
+            border: 1px solid #8f8;
+            color: #060;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Become a Member</h1>
+        
+        <% if (messages.error) { %>
+            <div class="error"><%= messages.error %></div>
+        <% } %>
+        
+        <% if (messages.success) { %>
+            <div class="success"><%= messages.success %></div>
+        <% } %>
+        
+        <div class="puzzle-box">
+            <div class="puzzle-question">
+                🤔 <%= puzzle %>
+            </div>
+            
+            <form method="POST" action="/becomeMember">
+                <label for="answer">Your Answer:</label>
+                <input 
+                    type="text" 
+                    id="answer" 
+                    name="answer" 
+                    placeholder="Type your answer here..."
+                    required 
+                    autocomplete="off"
+                />
+                <button type="submit">Submit Answer</button>
+            </form>
+        </div>
+        
+        <p><a href="/">← Back to Chatroom</a></p>
+    </div>
+</body>
+</html>

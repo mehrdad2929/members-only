@@ -14,6 +14,13 @@ function redirectIfAuthenticated(req, res, next) {
     }
     return res.redirect('/');
 }
+function redirectIfMember(req, res, next) {
+    if (req.user && req.user.ismember) {
+        req.flash('info', 'You are already a member!');
+        return res.redirect('/');
+    }
+    next();
+}
 function isAdmin(req, res, next) {
     console.log('isAdmin:', req.user.isadmin)
     try {
@@ -29,6 +36,7 @@ function isAdmin(req, res, next) {
 module.exports = {
     isAdmin,
     setUser,
+    redirectIfMember,
     isAuthenticated,
     redirectIfAuthenticated
 }

@@ -1,194 +1,342 @@
-<!-- index.ejs -->
 <%
 const canSeeDetails = user.ismember || user.isadmin;
 const canManageUsers = user.isadmin;
 %>
 <!DOCTYPE html>
-<html>
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chatroom</title>
+    <!-- Pico CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <style>
-        /* Style the modal */
+        /* Custom overrides */
+        .message-item {
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: var(--pico-border-radius);
+            background: var(--pico-card-background-color);
+        }
+        
+        .message-item.own-message {
+            background: var(--pico-primary-background);
+            margin-left: 2rem;
+        }
+        
+        .message-actions {
+            display: inline-flex;
+            gap: 0.5rem;
+            margin-left: 0.5rem;
+        }
+        
+        .message-actions button,
+        .message-actions form {
+            display: inline;
+        }
+        
+        .message-actions button {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            margin: 0;
+        }
+        
+        .message-meta {
+            color: var(--pico-muted-color);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        
         dialog {
-            border: 2px solid #333;
-            border-radius: 8px;
-            padding: 20px;
-            width: 600px;
-            max-width: 90%;
+            max-width: 600px;
         }
         
-        dialog::backdrop {
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        th, td {
-            padding: 8px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
 <body>
-    <h1>Chatroom</h1>
-    
-  <% if (messages && messages.length > 0) { %>
-    <ul style='list-style-type: none'>
-      <% messages.forEach(msg => { %>
-        <li style="<%= msg.username === user.username ? 'text-align: right;' : 'text-align: left; background-color: #fff;' %>">
-            <% if (msg.canEdit) { %>
-                <a href="/messages/<%= msg.id %>/edit">Edit</a>
-            <% } %>
-
-            <% if (msg.canDelete) { %>
-                <form method="POST" action="/messages/<%= msg.id %>/delete" style="display:inline;">
-                    <button>Delete</button>
-                </form>
-            <% } %>
-          <% if (user.ismember||msg.user_id===user.id||user.isadmin) { %>
-            <strong><%= msg.username %>:</strong> 
-          <% } else { %>  
-            <strong>Anonymous</strong> 
-          <% } %>
-          <%= msg.message %> 
-          (<%= new Date(msg.created_at).toLocaleString() %>)<br>
-          <!-- <% if (user.isadmin|| msg.user_id === user.id) { %> -->
-          <!--     <% if (msg.ismember) { %> -->
-          <!--       <form method="POST" action="/demoteMember"> -->
-          <!--           <input type="hidden" name="user_id" value="<%= msg.user_id %>"> -->
-          <!--           <button type="submit" class="demoteMember-btn">cancel their membership</button> -->
-          <!--       </form> -->
-          <!--     <% } else { %>   -->
-          <!--       <form method="POST" action="/becomeMember"> -->
-          <!--           <input type="hidden" name="user_id" value="<%= msg.user_id %>"> -->
-          <!--           <button type="submit" class="makethemmember-btn">make them member</button> -->
-          <!--       </form> -->
-          <!--     <% } %> -->
-          <!-- <% } %> -->
-        </li>
-      <% }) %>
-    </ul>
-  <% } else { %>
-    <p>No messages found.</p>
-  <% } %>
-  <form method="POST" action="/becomeMember">
-    <button type="submit" class="becomeMember-btn">become member</button>
-  </form>
-  <form method="POST" action="/logout">
-    <button type="submit" class="logout-btn">logout</button>
-  </form>
-    <form method="POST" action="/messages">
-        <textarea name="message" placeholder="Type your message..."></textarea>
-        <button type="submit">Send</button>
-    </form>
-    <ul>
-        <% messages.forEach(msg => { %>
-        <% }) %>
-    </ul>
-    
-        <button onclick="openUserModal()">👥 Users list</button>
-    <!-- User management modal -->
-    <% if (user) { %>
-        <dialog id="userModal">
-            <h2>User Management</h2>
-            
-<table>
-    <thead>
-        <tr>
-            <th>Username</th>
-            <% if (canSeeDetails) { %>
-                <th>Status</th>
-                <th>Messages</th>
-            <% } %>
-            <% if (canManageUsers) { %>
-                <th>membership management</th>
-                <th>kick it!</th>
-            <% } %>
-        </tr>
-    </thead>
-    <tbody>
-        <% allUsers.forEach(u => { %>
-            <%
-            // Calculate per-user permissions
-            const showRealName = canSeeDetails || u.id === user.id;
-            const canModifyThisUser = canManageUsers && !u.isadmin && u.id !== user.id;
-            %>
-            
-            <tr>
-                <td><%= showRealName ? u.username : 'Anonymous' %></td>
-                
-                <% if (canSeeDetails) { %>
-                    <td>
-                        <% if (u.isadmin) { %>Admin
-                        <% } else if (u.ismember) { %>Member
-                        <% } else { %>User<% } %>
-                    </td>
-                    <td><%= u.message_count %></td>
+    <main class="container">
+        <hgroup>
+            <h1>💬 Chatroom</h1>
+            <p>Welcome, <strong><%= user.username %></strong>! 
+                <% if (user.isadmin) { %>
+                    <span role="button" style="--pico-color: var(--pico-del-color); display: inline; padding: 0.25rem 0.5rem; font-size: 0.75rem;">Admin</span>
+                <% } else if (user.ismember) { %>
+                    <span role="button" style="--pico-color: var(--pico-ins-color); display: inline; padding: 0.25rem 0.5rem; font-size: 0.75rem;">Member</span>
                 <% } %>
-                
-                <% if (canManageUsers) { %>
-                    <td>
-                        <% if (canModifyThisUser) { %>
-                            <% if (u.ismember) { %>
-                                <form method="POST" action="/users/<%= u.id %>/demote" style="display: inline;">
-                                    <button>Demote</button>
-                                </form>
-                            <% } else { %>
-                                <form method="POST" action="/users/<%= u.id %>/promote" style="display: inline;">
-                                    <button>Promote</button>
+            </p>
+        </hgroup>
+        
+        <!-- Flash Messages -->
+        <% if (messages.error) { %>
+            <article style="--pico-color: var(--pico-del-color);">
+                <%= messages.error %>
+            </article>
+        <% } %>
+        <% if (messages.success) { %>
+            <article style="--pico-color: var(--pico-ins-color);">
+                <%= messages.success %>
+            </article>
+        <% } %>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button onclick="openUserModal()" class="outline">👥 Users</button>
+            <% if (user && !user.ismember) { %>
+                <button onclick="openMemberModal()" class="outline">⭐ Become Member</button>
+            <% } %>
+            <form method="POST" action="/logout" style="display: inline;">
+                <button type="submit" class="secondary outline">🚪 Logout</button>
+            </form>
+        </div>
+        
+        <!-- Messages List -->
+        <article>
+            <% if (messages && messages.length > 0) { %>
+                <% messages.forEach(msg => { %>
+                    <div class="message-item <%= msg.user_id === user.id ? 'own-message' : '' %>">
+                        <!-- Username -->
+                        <% if (user.ismember || msg.user_id === user.id || user.isadmin) { %>
+                            <strong><%= msg.username %></strong>
+                        <% } else { %>  
+                            <strong>Anonymous</strong>
+                        <% } %>
+                        
+                        <!-- Actions -->
+                        <span class="message-actions">
+                            <% if (msg.canEdit) { %>
+                                <button onclick="openEditModal(<%= msg.id %>, '<%= msg.message.replace(/'/g, "\\'").replace(/\n/g, '\\n') %>')" class="outline secondary">
+                                    ✏️
+                                </button>
+                            <% } %>
+                            <% if (msg.canDelete) { %>
+                                <form method="POST" action="/messages/<%= msg.id %>/delete" style="display:inline;">
+                                    <button type="submit" class="outline secondary" onclick="return confirm('Delete this message?')">🗑️</button>
                                 </form>
                             <% } %>
-                        <% } else if (u.id === user.id) { %>
-                            your admin!
-                        <% } else { %>
-                            -
-                        <% } %>
-                    </td>
-                <% } %>
-                <% if (canManageUsers && !u.isadmin && u.id !== user.id) { %>
-                    <td>
-                        <form method="POST" action="/users/<%= u.id %>/kick" style="display: inline;"
-                              onsubmit="return confirm('Are you sure you want to kick <%= u.username %>?')">
-                            <button type="submit" style="color: red;">🚫 Kick</button>
-                        </form>
-                    </td>
-                <% } %>
-            </tr>
-        <% }) %>
-    </tbody>
-</table>
+                        </span>
+                        
+                        <!-- Message Content -->
+                        <p style="margin: 0.5rem 0 0 0;">
+                            <%= msg.message %>
+                        </p>
+                        
+                        <!-- Metadata -->
+                        <div class="message-meta">
+                            <%= new Date(msg.created_at).toLocaleString() %>
+                            <% if (msg.edited_at) { %>
+                                · <em>edited</em>
+                            <% } %>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <p><em>No messages yet. Be the first to say something!</em></p>
+            <% } %>
+        </article>
+        
+        <!-- New Message Form -->
+        <article>
+            <form method="POST" action="/messages">
+                <label>
+                    New Message
+                    <textarea name="message" placeholder="Type your message..." required rows="3"></textarea>
+                </label>
+                <button type="submit">📤 Send Message</button>
+            </form>
+        </article>
+    </main>
+    
+    <!-- ========== MODAL 1: Edit Message ========== -->
+    <dialog id="editMessageModal">
+        <article>
+            <header>
+                <button aria-label="Close" rel="prev" onclick="closeEditModal()"></button>
+                <h3>Edit Message</h3>
+            </header>
+            <form id="editMessageForm" method="POST">
+                <label>
+                    Message
+                    <textarea id="editMessageText" name="message" required rows="5"></textarea>
+                </label>
+                <footer>
+                    <button type="button" onclick="closeEditModal()" class="secondary">Cancel</button>
+                    <button type="submit">💾 Save</button>
+                </footer>
+            </form>
+        </article>
+    </dialog>
+    
+    <!-- ========== MODAL 2: User Management ========== -->
+    <dialog id="userModal">
+        <article>
+            <header>
+                <button aria-label="Close" rel="prev" onclick="closeUserModal()"></button>
+                <h3>Users List</h3>
+            </header>
             
-            <button onclick="closeUserModal()" style="margin-top: 10px;">Close</button>
+            <figure>
+                <table role="grid">
+                    <thead>
+                        <tr>
+                            <th scope="col">Username</th>
+                            <% if (canSeeDetails) { %>
+                                <th scope="col">Status</th>
+                                <th scope="col">Messages</th>
+                            <% } %>
+                            <% if (canManageUsers) { %>
+                                <th scope="col">Actions</th>
+                            <% } %>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% allUsers.forEach(u => { %>
+                            <%
+                            const showRealName = canSeeDetails || u.id === user.id;
+                            const canModifyThisUser = canManageUsers && !u.isadmin && u.id !== user.id;
+                            %>
+                            <tr>
+                                <td><%= showRealName ? u.username : 'Anonymous' %></td>
+                                
+                                <% if (canSeeDetails) { %>
+                                    <td>
+                                        <% if (u.isadmin) { %>
+                                            <span role="button" style="--pico-color: var(--pico-del-color); padding: 0.25rem 0.5rem; font-size: 0.75rem;">Admin</span>
+                                        <% } else if (u.ismember) { %>
+                                            <span role="button" style="--pico-color: var(--pico-ins-color); padding: 0.25rem 0.5rem; font-size: 0.75rem;">Member</span>
+                                        <% } else { %>
+                                            <span style="color: var(--pico-muted-color);">User</span>
+                                        <% } %>
+                                    </td>
+                                    <td><%= u.message_count %></td>
+                                <% } %>
+                                
+                                <% if (canManageUsers) { %>
+                                    <td>
+                                        <% if (canModifyThisUser) { %>
+                                            <div style="display: flex; gap: 0.25rem;">
+                                                <% if (u.ismember) { %>
+                                                    <form method="POST" action="/users/<%= u.id %>/demote">
+                                                        <button type="submit" class="outline secondary">⬇️</button>
+                                                    </form>
+                                                <% } else { %>
+                                                    <form method="POST" action="/users/<%= u.id %>/promote">
+                                                        <button type="submit" class="outline">⬆️</button>
+                                                    </form>
+                                                <% } %>
+                                                <form method="POST" action="/users/<%= u.id %>/kick"
+                                                      onsubmit="return confirm('Kick <%= u.username %>?')">
+                                                    <button type="submit" class="outline" style="--pico-color: var(--pico-del-color);">🚫</button>
+                                                </form>
+                                            </div>
+                                        <% } else if (u.id === user.id) { %>
+                                            <small style="color: var(--pico-muted-color);">You</small>
+                                        <% } %>
+                                    </td>
+                                <% } %>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </figure>
+            
+            <footer>
+                <button onclick="closeUserModal()" class="secondary">Close</button>
+            </footer>
+        </article>
+    </dialog>
+    
+    <!-- ========== MODAL 3: Become Member ========== -->
+    <% if (user && !user.ismember) { %>
+        <dialog id="memberModal">
+            <article>
+                <header>
+                    <button aria-label="Close" rel="prev" onclick="closeMemberModal()"></button>
+                    <h3>🎯 Become a Member</h3>
+                </header>
+                
+                <p style="background: var(--pico-card-background-color); padding: 1rem; border-radius: var(--pico-border-radius);">
+                    <strong>🤔 Puzzle:</strong><br>
+                    What comes first, the chicken or the...?
+                </p>
+                
+                <form method="POST" action="/becomeMember">
+                    <label>
+                        Your Answer
+                        <input 
+                            type="text" 
+                            name="answer" 
+                            placeholder="Type your answer..." 
+                            required 
+                            autocomplete="off"
+                        />
+                    </label>
+                    <footer>
+                        <button type="button" onclick="closeMemberModal()" class="secondary">Cancel</button>
+                        <button type="submit">Submit Answer</button>
+                    </footer>
+                </form>
+            </article>
         </dialog>
     <% } %>
     
-    <!-- Your existing forms (logout, message, etc) -->
-    
-<script>
-//we can do this stugg with ajax too(mybe later) 
-    function openUserModal() {
-        document.getElementById('userModal').showModal();
-    }
-    
-    function closeUserModal() {
-        document.getElementById('userModal').close();
-        // Clean up URL hash
-        history.pushState("", document.title, window.location.pathname);
-    }
-    
-    // Auto-open modal if hash is present
-    window.addEventListener('DOMContentLoaded', function() {
-        if (window.location.hash === '#open-users-modal') {
-            openUserModal();
-            // Optional: clean up hash
-            history.replaceState(null, null, ' ');
+    <!-- ========== JAVASCRIPT ========== -->
+    <script>
+        // Modal functions
+        function openEditModal(messageId, currentText) {
+            document.getElementById('editMessageText').value = currentText;
+            document.getElementById('editMessageForm').action = `/messages/${messageId}/edit`;
+            document.getElementById('editMessageModal').showModal();
         }
-    });
-</script>
+        
+        function closeEditModal() {
+            document.getElementById('editMessageModal').close();
+        }
+        
+        function openUserModal() {
+            document.getElementById('userModal').showModal();
+        }
+        
+        function closeUserModal() {
+            document.getElementById('userModal').close();
+            if (window.location.hash === '#open-users-modal') {
+                history.pushState("", document.title, window.location.pathname);
+            }
+        }
+        
+        function openMemberModal() {
+            document.getElementById('memberModal')?.showModal();
+        }
+        
+        function closeMemberModal() {
+            document.getElementById('memberModal')?.close();
+        }
+        
+        // Auto-open modals
+        window.addEventListener('DOMContentLoaded', function() {
+            const hash = window.location.hash;
+            if (hash === '#open-users-modal') {
+                openUserModal();
+                history.replaceState(null, null, ' ');
+            }
+            <% if (messages.error && user && !user.ismember) { %>
+                openMemberModal();
+            <% } %>
+        });
+        
+        // Close on outside click
+        document.querySelectorAll('dialog').forEach(dialog => {
+            dialog.addEventListener('click', function(event) {
+                if (event.target === this) {
+                    this.close();
+                }
+            });
+        });
+    </script>
 </body>
 </html>

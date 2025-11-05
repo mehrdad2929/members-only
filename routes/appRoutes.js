@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { isAuthenticated, redirectIfAuthenticated, isAdmin } = require('../middlewares/auth')
+const { isAuthenticated, redirectIfAuthenticated, isAdmin, redirectIfMember } = require('../middlewares/auth')
 const appController = require('../controllers/appController.js')
 const appRouter = Router();
 
@@ -14,18 +14,11 @@ appRouter.get('/login', redirectIfAuthenticated, appController.getLogin)
 appRouter.post('/login', appController.postLogin)
 appRouter.post('/logout', isAuthenticated, appController.postLogout)
 
-appRouter.get('/users', isAuthenticated, appController.getUsersPage);
 appRouter.post('/users/:id/kick', isAdmin, appController.kickUser);
-// appRouter.get('/user/:id', isAuthenticated, appController.getUserById);
-// appRouter.get('/user/:id/edit', isAuthenticated, appController.getUserById);
-// appRouter.post('/user/:id/edit', isAuthenticated, appController.getUserById);
-//admin routes:
-// appRouter.get('/user/:id/becomeMember', isAuthenticated, appController.getUserById);
 appRouter.post('/users/:id/promote', isAdmin, appController.postPromoteToMember);
 appRouter.post('/users/:id/demote', isAdmin, appController.postDemoteFromMember);
-// appRouter.post('/admin/users/:id/kick', isAdmin, appController.kickUser);
-// appRouter.get('/becomeMember', isAuthenticated, redirectIfMember, appController.getBecomeMemeber)
-// appRouter.post('/becomeMember', isAuthenticated, appController.postBecomeMember)
+appRouter.get('/becomeMember', isAuthenticated, redirectIfMember, appController.getBecomeMember);
+appRouter.post('/becomeMember', isAuthenticated, redirectIfMember, appController.postBecomeMember);
 //TODO:about membership gonna be a list of users(admin can member or even kick somone in that /
 //memebrs can see users name/authenticated user can see his own username and others are anonymos too him)
 //and a user page(with a avatar that u press and go to that page u can activate membership in that page)

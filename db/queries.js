@@ -168,7 +168,15 @@ async function deleteUserSessions(userId) {
         WHERE sess::jsonb -> 'passport' ->> 'user' = $1
     `, [userId.toString()]);
 }
+async function promoteToMember(userId) {
+    await pool.query(`
+        UPDATE users 
+        SET ismember = true 
+        WHERE id = $1
+    `, [userId]);
+}
 module.exports = {
+    promoteToMember,
     deleteUserSessions,
     deleteUser,
     getMessageWithAuthor,

@@ -1,45 +1,95 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
+    
+    <!-- Pico CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    
     <style>
-        .error {
-            background-color: #fee;
-            border: 1px solid #f88;
-            color: #c00;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
+        body {
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+        }
+        
+        .flash-error {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: var(--pico-border-radius);
+            background-color: var(--pico-del-color);
+            color: var(--pico-contrast);
+            border: 1px solid var(--pico-del-color);
+        }
+        
+        .form-links {
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        .password-hint {
+            font-size: 0.875rem;
+            color: var(--pico-muted-color);
+            margin-top: 0.25rem;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Signup Page</h1>
-        
-        <!-- Display error messages -->
-        <% if (messages.error) { %>
-            <div class="error">
-                <%= messages.error %>
-            </div>
-        <% } %>
-        
-        <div class="form-container">
-            <form method="POST" action="/signup" id="signupform">
-                <div class="form-group">
-                    <label for="username">Username:</label>
-                    <input type="text" id="username" name="username" required/>
-                    
-                    <label for="password">Password:</label>
-                    <input type="password" id="password" name="password" required minlength="6"/>
+    <main class="container">
+        <article>
+            <header>
+                <h1>Sign Up</h1>
+                <p>Create your account to join the chatroom</p>
+            </header>
+            
+            <!-- Flash Messages -->
+            <% if (messages.error) { %>
+                <div class="flash-error" role="alert">
+                    <strong>⚠️ Error:</strong> <%= messages.error %>
                 </div>
-                <button type="submit" class="submit-btn" id="submitBtn">
-                    Sign Up
-                </button>
+            <% } %>
+            
+            <!-- Signup Form -->
+            <form method="POST" action="/signup">
+                <label>
+                    Username
+                    <input 
+                        type="text" 
+                        name="username" 
+                        placeholder="Choose a username" 
+                        required 
+                        minlength="3"
+                        autocomplete="username"
+                    />
+                </label>
+                
+                <label>
+                    Password
+                    <input 
+                        type="password" 
+                        name="password" 
+                        placeholder="Choose a password" 
+                        required
+                        minlength="6"
+                        autocomplete="new-password"
+                    />
+                    <small class="password-hint">Minimum 6 characters</small>
+                </label>
+                
+                <button type="submit">Sign Up</button>
             </form>
-        </div>
-    </div>
+            
+            <footer class="form-links">
+                <small>
+                    Already have an account? <a href="/login">Login</a>
+                </small>
+            </footer>
+        </article>
+    </main>
 </body>
 </html>

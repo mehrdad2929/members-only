@@ -98,14 +98,16 @@ exports.postEditMessage = async (req, res) => {
 
         const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
         const messageCreatedAt = new Date(message.created_at);
-        if (messageCreatedAt > twoHoursAgo) {
+        console.log(messageCreatedAt);
+        console.log(twoHoursAgo);
+        if (twoHoursAgo > messageCreatedAt) {
             return res.status(403).send('You are not allowed to change message after 2 hours.');
         }
         const lastMessage = await db.getLastMessageByUser(req.user.id)
         if (!lastMessage.id === messageId) {
             return res.status(403).send('You can only edit ur last message.');
         }
-        const editedMessage = req.body.editedMessage;
+        const editedMessage = req.body.message;
         await db.updateMessageWithId(messageId, editedMessage);
         res.redirect('/')
     } catch (err) {
@@ -201,6 +203,37 @@ exports.kickUser = async (req, res) => {
     } catch (err) {
         console.error('Error kicking user:', err);
         res.status(500).send('Something went wrong');
+    }
+}
+exports.getBecomeMember = (req, res) => {
+    res.render('becomeMember', {
+        title: 'Become a Member',
+        puzzle: 'What comes first, the chicken or the...?'
+    });
+}
+
+exports.postBecomeMember = async (req, res) => {
+    try {
+        const { answer } = req.body;
+
+        // Normalize answer (lowercase, trim spaces)
+        const normalizedAnswer = answer.toLowerCase().trim();
+        const correctAnswer = process.env.MEMBERSHIP_SECRET.toLowerCase();
+
+        if (normalizedAnswer === correctAnswer) {
+            // Correct!
+            await db.promoteToMember(req.user.id);
+            req.flash('success', '🎉 Congratulations! You are now a member!');
+            res.redirect('/');
+        } else {
+            // Wrong
+            req.flash('error', '❌ Incorrect answer. Think again!');
+            res.redirect('/becomeMember');
+        }
+    } catch (err) {
+        console.error('Error in becomeMember:', err);
+        req.flash('error', 'Something went wrong. Please try again.');
+        res.redirect('/becomeMember');
     }
 }
 // exports.postBecomeMember = async (req, res) => {
