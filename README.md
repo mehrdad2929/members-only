@@ -9,23 +9,15 @@ A secure message board where users can post anonymously, but only members see wh
 - Admins can manage users
 - Message editing & deletion
 
-## 🚀 Quick Start
-```bash
-git clone https://github.com/yourusername/members-only.git
-cd members-only
-npm install
-cp .env.example .env
-# Add your database & session secret
-npm start
-```
 
 ## 🛠️ Tech Stack
 - **Backend**: Node.js, Express, Passport.js, PostgreSQL
 - **Frontend**: EJS, Pico CSS
 - **Security**: bcrypt, sessions, CSRF protection
-
+- **online db**: neon
+- **Deployment**: vercel
 ## 📚 About
 Project for [The Odin Project](https://www.theodinproject.com/lessons/node-path-nodejs-members-only) demonstrating authentication and authorization in Node.js.
 
-**Live Demo**: [Your Demo Link]  
+**Live Demo**: [https://members-only-teal.vercel.app/](https://members-only-teal.vercel.app/)  
 **Source**: [github.com/mehrdad2929/members-only](https://github.com/mehrdad2929/members-only)
