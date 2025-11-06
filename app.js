@@ -7,6 +7,7 @@ const session = require('express-session');
 const pool = require('./db/pool')
 const flash = require('connect-flash')
 const app = express()
+app.set('trust proxy', 1);
 const passport = require('./config/passport');
 const { setUser } = require('./middlewares/auth')
 app.set('views', path.join(__dirname, 'views'));
@@ -17,21 +18,17 @@ app.use(express.urlencoded({ extended: true }));
 app.use(session({
     store: new (require('connect-pg-simple')(session))({
         pool: pool,
-        tableName: 'session',
-        createTableIfMissing: true,
-        pruneSessionInterval: false, // Disable auto-pruning in serverless
+        tableName: 'session'
     }),
     secret: process.env.FOO_COOKIE_SECRET,
-    name: 'sessionId', // Give it an explicit name
     saveUninitialized: false,
+    createTableIfMissing: true,
+    name: 'MyCoolWebAppCookieName',
     resave: false,
-    rolling: true, // Reset expiry on every response
     cookie: {
-        httpOnly: true,
-        secure: true, // MUST be true for HTTPS (Vercel uses HTTPS)
-        sameSite: 'lax', // Changed from 'strict' - this is key!
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-        path: '/' // Explicitly set path
+        secure: true,
+        sameSite: 'none',
+        maxAge: 30 * 24 * 60 * 60 * 1000
     }
 }));
 
