@@ -6,18 +6,28 @@ const createMessagesTable = `CREATE TABLE IF NOT EXISTS messages (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     user_id INTEGER,
     parent_message_id INTEGER,
+    edited_at TIMESTAMP,
+    edit_count INTEGER DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );`
 
+
+const createSessionTable = `CREATE TABLE IF NOT EXISTS session (
+    sid VARCHAR NOT NULL PRIMARY KEY,
+    sess JSON NOT NULL,
+    expire TIMESTAMP(6) NOT NULL
+);`
+
+const createSessionExpireTable = ` CREATE INDEX IDX_session_expire ON session(expire); `
+
 const createUsersTable = `CREATE TABLE IF NOT EXISTS users (
    id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-   username VARCHAR(50) UNIQUE, 
-   password VARCHAR ( 255 ),
-   isMember BOOLEAN,
-   isAdmin BOOLEAN,
-   CONSTRAINT admin_must_be_member CHECK (NOT isAdmin OR isMember)
+   username VARCHAR(50) UNIQUE,
+   password VARCHAR(255),
+   ismember BOOLEAN DEFAULT false,
+   isadmin BOOLEAN DEFAULT false
 );`
-//TODO:get a joined table 
+//TODO:update the craete tbaale queries and add the session one 
 async function getMessageWithAuthor() {
     const result = await pool.query(`
     SELECT 

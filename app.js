@@ -1,3 +1,4 @@
+require('@dotenvx/dotenvx').config();
 const express = require('express')
 const compression = require('compression');
 const path = require('path');
@@ -8,7 +9,6 @@ const flash = require('connect-flash')
 const app = express()
 const passport = require('./config/passport');
 const { setUser } = require('./middlewares/auth')
-
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
