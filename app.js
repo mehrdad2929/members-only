@@ -17,16 +17,21 @@ app.use(express.urlencoded({ extended: true }));
 app.use(session({
     store: new (require('connect-pg-simple')(session))({
         pool: pool,
-        tableName: 'session'
+        tableName: 'session',
+        createTableIfMissing: true,
+        pruneSessionInterval: false, // Disable auto-pruning in serverless
     }),
     secret: process.env.FOO_COOKIE_SECRET,
+    name: 'sessionId', // Give it an explicit name
     saveUninitialized: false,
-    createTableIfMissing: true,
     resave: false,
+    rolling: true, // Reset expiry on every response
     cookie: {
         httpOnly: true,
-        sameSite: 'strict',
-        maxAge: 30 * 24 * 60 * 60 * 1000
+        secure: true, // MUST be true for HTTPS (Vercel uses HTTPS)
+        sameSite: 'lax', // Changed from 'strict' - this is key!
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+        path: '/' // Explicitly set path
     }
 }));
 
